@@ -4,8 +4,6 @@ from googleapiclient.discovery import build
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
 
-import requests
-import json
 
 # Get data from Google Sheets
 SERVICE_ACCOUNT_FILE = 'service_account_key.json'
@@ -18,6 +16,7 @@ range_name = "Form Responses 1!B2:E"
 result = sheets_api.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_name).execute()
 responses = result.get("values", [])
 
+# Get sentiment analysis from Azure Cognitive Services
 azure_api_key = "0e57acbbb0f54f169f104dfb06f80ca9"
 azure_endpoint = "https://project2cognitiveemployeereview.cognitiveservices.azure.com/"
 text_analytics_client = TextAnalyticsClient(endpoint=azure_endpoint, credential=AzureKeyCredential(azure_api_key))
@@ -27,8 +26,9 @@ sentiments_by_date = []
 for response in responses:
     feedbacks = response[:-1]
     date = response[-1]
-    
-    documents = [{"id": str(i + 1), "text": text} for i, text in enumerate(feedbacks)]
+
+    documents = [{"id": str(i + 1), "text": text}
+                 for i, text in enumerate(feedbacks)]
     sentiment_analysis = text_analytics_client.analyze_sentiment(documents=documents)
 
     sentiments = []
@@ -38,7 +38,7 @@ for response in responses:
         sentiment_neutral = sentiment_scores.neutral
         sentiment_negative = sentiment_scores.negative
         sentiments.append((f"Employee {doc.id}", {"positive": sentiment_positive, "neutral": sentiment_neutral, "negative": sentiment_negative}))
-    
+
     sentiments_by_date.append((date, sentiments))
 
 for date_sentiments in sentiments_by_date:
@@ -49,7 +49,7 @@ for date_sentiments in sentiments_by_date:
         print(f"{sentiment[0]}: positive {sentiment[1]['positive']}, neutral {sentiment[1]['neutral']}, negative {sentiment[1]['negative']}")
     print("\n")
 
-# create csv file
+# Write to CSV file
 with open("sentiments.csv", "w") as f:
     f.write("Date,Employee,Positive,Neutral,Negative\n")
     for date_sentiments in sentiments_by_date:
