@@ -1,0 +1,13 @@
+digraph {
+	"Google Form"
+	"Google Sheets"
+	"Google Service Account"
+	"Python Script"
+	"Azure Cognitive Service"
+	"Power BI"
+	"Google Form" -> "Google Sheets"
+	"Google Service Account" -> "Google Sheets"
+	"Google Service Account" -> "Python Script"
+	"Azure Cognitive Service" -> "Python Script"
+	"Python Script" -> "Power BI"
+}
